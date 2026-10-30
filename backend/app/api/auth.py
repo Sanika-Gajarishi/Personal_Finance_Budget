@@ -19,9 +19,6 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-# --------------------------------------------------
-# 1. Get the currently authenticated user
-# --------------------------------------------------
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -58,9 +55,6 @@ def get_current_user(
     return user
 
 
-# --------------------------------------------------
-# 2. Register a new user
-# --------------------------------------------------
 
 @router.post(
     "/register",
@@ -105,9 +99,6 @@ def register_user(
     return new_user
 
 
-# --------------------------------------------------
-# 3. Log in and generate an access token
-# --------------------------------------------------
 
 @router.post(
     "/login",
@@ -140,10 +131,6 @@ def login_user(
         token_type="bearer",
     )
 
-
-# --------------------------------------------------
-# 4. Get the currently logged-in user's details
-# --------------------------------------------------
 
 @router.get(
     "/me",

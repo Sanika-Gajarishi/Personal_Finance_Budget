@@ -31,9 +31,6 @@ from app.schemas.budget import (
 router = APIRouter()
 
 
-# --------------------------------------------------
-# 1. Create a monthly budget
-# --------------------------------------------------
 
 @router.post(
     "/",
@@ -93,9 +90,7 @@ def create_budget(
     return budget
 
 
-# --------------------------------------------------
-# 2. Retrieve the user's budgets
-# --------------------------------------------------
+
 
 @router.get(
     "/",
@@ -126,9 +121,7 @@ def get_budgets(
     return db.scalars(statement).all()
 
 
-# --------------------------------------------------
-# 3. Update a budget's monthly limit
-# --------------------------------------------------
+
 
 @router.patch(
     "/{budget_id}",
@@ -161,9 +154,7 @@ def update_budget(
     return budget
 
 
-# --------------------------------------------------
-# 4. Delete a budget
-# --------------------------------------------------
+
 
 @router.delete(
     "/{budget_id}",
@@ -193,9 +184,7 @@ def delete_budget(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# --------------------------------------------------
-# 5. Calculate the monthly budget summary
-# --------------------------------------------------
+
 
 @router.get(
     "/summary",
