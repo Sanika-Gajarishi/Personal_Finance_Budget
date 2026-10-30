@@ -27,9 +27,6 @@ from app.schemas.transaction import (
 router = APIRouter()
 
 
-# --------------------------------------------------
-# 1. Create an income or expense transaction
-# --------------------------------------------------
 
 @router.post(
     "/",
@@ -63,9 +60,7 @@ def create_transaction(
     return transaction
 
 
-# --------------------------------------------------
-# 2. Get the logged-in user's transactions
-# --------------------------------------------------
+
 
 @router.get(
     "/",
@@ -120,9 +115,6 @@ def get_transactions(
     return transactions
 
 
-# --------------------------------------------------
-# 3. Get one transaction by ID
-# --------------------------------------------------
 
 @router.get(
     "/{transaction_id}",
@@ -149,9 +141,7 @@ def get_transaction(
     return transaction
 
 
-# --------------------------------------------------
-# 4. Update a transaction
-# --------------------------------------------------
+
 
 @router.patch(
     "/{transaction_id}",
@@ -199,9 +189,7 @@ def update_transaction(
     return transaction
 
 
-# --------------------------------------------------
-# 5. Delete a transaction
-# --------------------------------------------------
+
 
 @router.delete(
     "/{transaction_id}",
