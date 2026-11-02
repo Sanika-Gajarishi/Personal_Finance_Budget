@@ -195,9 +195,10 @@ You spent ₹250.00 on food in October 2026.
 The application uses PostgreSQL as its primary relational database.
 SQLAlchemy is used as the ORM, while Alembic manages database schema migrations.
 
-**Main Database Models**
-|---|---|
+## Main Database Models
 | Model | Purpose |
+|---|---|
+| User | Stores user account information and authentication details. |
 | Transaction | Stores income and expense records. |
 | Budget | tores monthly category-wise spending limits. |
 
