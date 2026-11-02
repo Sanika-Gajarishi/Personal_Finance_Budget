@@ -196,6 +196,7 @@ The application uses PostgreSQL as its primary relational database.
 SQLAlchemy is used as the ORM, while Alembic manages database schema migrations.
 
 **Main Database Models**
+|---|---|
 | Model | Purpose |
 | Transaction | Stores income and expense records. |
 | Budget | tores monthly category-wise spending limits. |
