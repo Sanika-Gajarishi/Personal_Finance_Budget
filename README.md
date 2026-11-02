@@ -1,63 +1,205 @@
-# Personal Finance Budget
+## 💰 Personal Finance Budget — AI Finance Assistant
 
-A full-stack personal finance and expense management application built with **FastAPI**, **PostgreSQL**, **SQLAlchemy**, **Alembic**, **Streamlit**, and the **Gemini API**. It helps users record income and expenses, set monthly category budgets, review spending patterns, and ask an AI finance assistant questions about category spending.
+A full-stack personal finance management application that helps users track income, manage expenses, create monthly budgets, and understand their spending habits.
 
-> Currency: INR (₹). The application uses authenticated user accounts and scopes financial records to the signed-in user.
+The application combines **FastAPI**, **PostgreSQL**, **Streamlit**, and **Google's Gemini API** to provide a financial dashboard and an AI-powered finance assistant.
+
+Users can securely manage their financial records, monitor monthly budget utilization, and ask natural-language questions about their category-wise spending.
 
 ## Features
 
-### Authentication
-- User registration with email and password.
-- Login using JWT bearer tokens.
-- Authenticated endpoints for retrieving the current user.
-- Passwords are stored as hashes, not as plain text.
+### User Authentication
+- User registration and login.
+- Password hashing for secure credential storage.
+- JWT-based authentication.
+- Authenticated access to financial records.
+- User-specific data isolation.
 
 ### Transaction management
-- Create income and expense transactions.
-- View transaction history with pagination support.
-- Filter transactions by type and date range.
-- Retrieve, update, and delete transactions.
-- Store amount, category, optional description, type, and transaction date.
-- Transaction queries are restricted to the authenticated user.
+- Add income and expense transactions.
+- View transaction history.
+- Update existing transactions.
+- Delete transactions.
+- Categorize transactions.
+- Add custom transaction categories.
+- Filter transactions by type and category.
+- Search transactions using category or description.
+- Store transaction dates and descriptions.
 
-### Monthly budgets
-- Create a monthly spending limit for a category.
-- View budgets by month and year.
-- Update and delete budgets.
-- Calculate category-level spending from expense transactions.
-- View total budget, total spent, remaining amount, percentage used, and budget status.
-- Highlight budgets that are nearing or exceeding their limits.
+### Budget Management
+- Create monthly budgets for different spending categories.
+- Set individual category-wise spending limits.
+- Update existing budget limits.
+- Delete budgets.
+- View monthly budget summaries.
+- Calculate total spending and remaining budget.
+- Monitor budget utilization through progress indicators.
 
-### Dashboard and visualizations
-- Current-month income, expenses, and remaining balance.
-- Income-versus-expenses chart.
-- Expense category breakdown.
-- Recent transaction list.
+## Budget alerts:
+- Warning when 80% or more of a budget is utilized.
+- Notification when the budget limit is reached.
+- Alert when spending exceeds the budget.
+
+### Financial Dashboard
+- The dashboard provides an overview of the user's financial activity.
+
+Features include:
+- Total income for the current month.
+- Total expenses for the current month.
+- Remaining balance.
+- Monthly budget overview.
+- Income vs. expenses visualization.
+- Category-wise expense breakdown.
+- Recent transaction history.
 - Monthly budget progress and alerts.
 
 ### AI Finance Assistant
-- Uses the Gemini API with function/tool calling.
-- The model can request the `get_category_spending` Python tool for a category, month, and year.
-- The backend executes the database query using the authenticated user's ID.
-- The tool result is passed back to Gemini to produce a natural-language explanation.
-- The response includes the tool name and calculated result as well as the explanation.
+The application integrates Google's Gemini API to understand natural-language financial questions.
 
-The AI assistant currently implements category-spending questions through the `get_category_spending` tool; it is not a general-purpose financial planner or a bank-connected service.
+Instead of calculating financial figures directly through the language model, the assistant uses **function calling (tool calling)** to retrieve actual financial data from PostgreSQL.
+
+Example question:
+
+**How much did I spend on food in October 2026?**
+
+The assistant identifies the required category, month, and year, calls the Python finance tool, retrieves the calculated result, and generates a natural-language response.
+
+Example response:
+
+**You spent ₹250.00 on food in October 2026.**
+
+**Current AI tool:**
+
+**get_category_spending**
+
+Calculates total expenses for a selected category, month, and year using the authenticated user's database records.
 
 ## Technology stack
 
 | Layer | Technologies |
 |---|---|
-| Frontend | Python, Streamlit, Pandas, Plotly, Requests |
-| Backend API | Python, FastAPI, Pydantic |
+| Programming Language | Python |
+| Backend Framework | FastAPI |
+| Frontend Framework | Streamlit |
 | Database | PostgreSQL |
 | ORM and migrations | SQLAlchemy, Alembic |
-| Authentication | JWT, password hashing |
-| AI | Google Gemini API, `google-genai` SDK, function calling |
+| Data Validation | Pydantic |
+| Authentication | JWT |
+| Password Security | Password Hashing |
+| LLM | Google Gemini API |
+| AI Integration | Gemini Function Calling |
+| Data Processing | Pandas |
+| Data Visualization | Plotly |
+| API Communication | Requests |
 | Testing | Pytest |
+| API Documentation | Swagger UI |
 
-## Project structure
+## 🏗️ System Architecture
+The application follows a client-server architecture.
 
+- Streamlit provides the user interface.
+- FastAPI handles application logic and REST API requests.
+- PostgreSQL stores user, transaction, and budget information.
+- SQLAlchemy manages database operations.
+- Gemini interprets natural-language finance questions.
+- Python finance tools retrieve and calculate financial information.
+
+## 🤖 AI Finance Assistant — Tool Calling Workflow
+
+One of the important components of this project is the integration of Gemini function calling with Python backend tools.
+
+The language model does not directly access the database. Instead, it identifies the appropriate tool and provides the required arguments. The backend validates the arguments and executes the Python function.
+
+**Example Workflow**
+
+**User question:** 
+
+How much did I spend on food in October 2026?
+
+Step 1 — User submits a question
+
+The Streamlit frontend sends the question to:
+
+POST /ai/ask
+
+Step 2 — Gemini identifies the required tool
+
+Gemini selects:
+
+get_category_spending
+
+And generates arguments:
+
+{
+    "category": "Food",
+    "month": 10,
+    "year": 2026
+}
+
+Step 3 — Backend validates the arguments
+
+The backend validates the category, month, and year before executing the function.
+
+The authenticated user's ID is supplied by FastAPI authentication rather than being accepted from Gemini.
+
+Step 4 — Python executes the finance tool
+
+tool_result = get_category_spending(
+    db=db,
+    user_id=user_id,
+    category=category,
+    month=month,
+    year=year,
+)
+
+The tool queries PostgreSQL and calculates the total expenses for the requested category and period.
+
+Step 5 — Tool result is sent back to Gemini
+
+The backend provides the function result to Gemini so it can generate a natural-language explanation.
+
+Step 6 — Final response
+
+Example tool result:
+
+{
+    "category": "Food",
+    "month": 10,
+    "year": 2026,
+    "total_spending": "250.00",
+    "currency": "INR"
+}
+
+Final AI response:
+
+You spent ₹250.00 on food in October 2026.
+
+## 🗄️ Database Design
+
+The application uses PostgreSQL as its primary relational database.
+SQLAlchemy is used as the ORM, while Alembic manages database schema migrations.
+
+**Main Database Models**
+| Model | Purpose |
+| Transaction | Stores income and expense records. |
+| Budget | tores monthly category-wise spending limits. |
+
+## Database migrations
+
+Alembic manages schema migrations. After pulling changes that add a migration, apply them from the `backend` directory:
+
+```powershell
+alembic upgrade head
+```
+
+To check the current migration revision:
+
+```powershell
+alembic current
+```
+
+
+## 📁 Project Structure
 ```text
 Personal_Finance_Budget/
 ├── backend/
@@ -89,14 +231,7 @@ Personal_Finance_Budget/
     └── requirements.txt
 ```
 
-## Prerequisites
-
-- Python 3.10 or later.
-- PostgreSQL.
-- A Google Gemini API key.
-- Git.
-
-## Setup
+## ⚙️ Installation and Setup
 
 The commands below use Windows PowerShell. Run them from the repository root unless a different directory is shown.
 
@@ -234,75 +369,53 @@ Content-Type: application/json
 
 The AI endpoint uses the authenticated account from the token. A user ID is not accepted from the question or from Gemini's tool arguments.
 
-## Database migrations
 
-Alembic manages schema migrations. After pulling changes that add a migration, apply them from the `backend` directory:
+## 🧪 Testing
+The backend uses Pytest for testing.
 
-```powershell
-alembic upgrade head
-```
+The test suite includes:
+- Database connection tests.
+- Finance API endpoint tests.
+- Finance tool tests.
+- Authentication and security tests.
+- Shared test fixtures.
 
-To check the current migration revision:
+**Run Tests**
+Navigate to the backend directory:
 
-```powershell
-alembic current
-```
+cd backend
+Activate the virtual environment:
+.\.venv\Scripts\Activate.ps1
 
-## Running tests
+Run all tests:
+pytest -v
 
-From the `backend` directory with the virtual environment activated:
+Run an individual test file:
 
-```powershell
-pytest
-```
+pytest tests/test_finance_tools.py -v
 
-Tests may require a configured test database and environment variables, depending on the test configuration.
+Run database connection tests:
 
-## Configuration reference
+pytest tests/test_db_connection.py -v
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | SQLAlchemy PostgreSQL connection URL |
-| `JWT_SECRET_KEY` | Secret used to sign access tokens |
-| `JWT_ALGORITHM` | JWT signing algorithm (defaults to `HS256`) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime in minutes (defaults to `30`) |
-| `GEMINI_API_KEY` | Credential for Gemini API requests |
-| `FINANCE_API_URL` | Optional frontend override for the FastAPI base URL |
 
-## Troubleshooting
-
-### Frontend cannot connect to FastAPI
-
-- Confirm the backend server is running.
-- Open http://127.0.0.1:8000/health and check for a healthy response.
-- Confirm `FINANCE_API_URL` points to the backend address used by your environment.
-
-### Database connection or missing-table errors
-
-- Confirm PostgreSQL is running.
-- Verify `DATABASE_URL` and that the database exists.
-- Run `alembic upgrade head` from the `backend` directory.
-
-### AI assistant errors or timeouts
-
-- Confirm `GEMINI_API_KEY` is set correctly in `backend/.env`.
-- Check the FastAPI terminal for the backend exception details.
-- Verify that the machine can reach the Gemini API.
-- Remember that the AI question flow makes a model request to select tool arguments and a further model request to explain the tool result.
-
-## Security notes
+## 🔐 Security Considerations
 
 - Keep secrets in local environment variables or an untracked `.env` file.
 - Use a strong, unique `JWT_SECRET_KEY` outside local development.
 - Do not expose database credentials or Gemini API keys in frontend code.
 - The backend derives the user identity from the validated JWT and filters financial records by that user.
 
-## Current scope and limitations
+## 👩‍💻 Author
 
-- The application stores transactions entered by the user; no bank account synchronization is documented in the implementation.
-- The Gemini tool currently supports category spending totals for a specified month and year.
-- The frontend and backend are configured for local development in the setup instructions above; production deployment requires appropriate hosted database, API, secrets, HTTPS, and CORS configuration.
+Sanika Gajarishi
 
-## License
+B.Tech — Artificial Intelligence and Data Science
+
+GitHub: Sanika-Gajarishi
+
+Project Repository: Personal Finance Budget
+
+ ## 📄 License
 
 No license file is currently present in this repository. Unless a license is added, do not assume the code is open for reuse, redistribution, or modification by others.
