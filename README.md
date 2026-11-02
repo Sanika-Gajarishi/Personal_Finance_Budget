@@ -60,13 +60,17 @@ Instead of calculating financial figures directly through the language model, th
 
 Example question:
 
+```
 **How much did I spend on food in October 2026?**
+```
 
 The assistant identifies the required category, month, and year, calls the Python finance tool, retrieves the calculated result, and generates a natural-language response.
 
-Example response:
+Example response
 
+```
 **You spent ₹250.00 on food in October 2026.**
+```
 
 **Current AI tool:**
 
