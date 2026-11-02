@@ -398,26 +398,36 @@ The test suite includes:
 - Authentication and security tests.
 - Shared test fixtures.
 
-**Run Tests**
+**Run Tests:**
+
 Navigate to the backend directory:
 
-**cd backend**
-
+```
+cd backend
+```
 Activate the virtual environment:
 
-**.\.venv\Scripts\Activate.ps1**
+```
+.\.venv\Scripts\Activate.ps1
+```
 
 Run all tests:
 
-**pytest -v**
+```
+pytest -v
+```
 
 Run an individual test file:
 
-**pytest tests/test_finance_tools.py -v**
+```
+pytest tests/test_finance_tools.py -v
+```
 
 Run database connection tests:
 
-**pytest tests/test_db_connection.py -v**
+```
+pytest tests/test_db_connection.py -v
+```
 
 
 ## 🔐 Security Considerations
