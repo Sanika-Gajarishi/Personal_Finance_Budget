@@ -5,9 +5,12 @@ from sqlalchemy.orm import Session
 from app.tools.finance_tools import get_category_spending
 from app.core.config import settings
 
-
+MODEL_NAME = "gemini-3.5-flash-lite"
 client = genai.Client(
     api_key=settings.GEMINI_API_KEY,
+    http_options=types.HttpOptions(
+        timeout=90000,
+    ),
 )
 
 
@@ -50,6 +53,7 @@ finance_tools = [
     )
 ]
 
+
 def request_category_spending_tool(question: str):
     """
     Ask Gemini to identify the category-spending tool
@@ -57,7 +61,7 @@ def request_category_spending_tool(question: str):
     """
 
     response = client.models.generate_content(
-        model="gemini-flash-latest",
+        model=MODEL_NAME,
         contents=question,
         config=types.GenerateContentConfig(
             tools=finance_tools,
@@ -74,6 +78,7 @@ def request_category_spending_tool(question: str):
 
     return response
 
+
 def answer_category_spending_question(
     question: str,
     db: Session,
@@ -86,8 +91,6 @@ def answer_category_spending_question(
     The user_id must come from the authenticated backend,
     never from Gemini's function-call arguments.
     """
-
-    # 1. Ask Gemini to select the finance tool.
     response = request_category_spending_tool(question)
 
     function_calls = response.function_calls or []
@@ -104,13 +107,11 @@ def answer_category_spending_question(
 
     function_call = function_calls[0]
 
-    # 2. Allow only the tool implemented by this service.
     if function_call.name != "get_category_spending":
         raise ValueError("Unsupported finance tool.")
 
     arguments = function_call.args or {}
 
-    # 3. Validate arguments before executing the function.
     category = arguments.get("category")
     month = arguments.get("month")
     year = arguments.get("year")
@@ -118,38 +119,54 @@ def answer_category_spending_question(
     if not isinstance(category, str) or not category.strip():
         raise ValueError("Invalid category returned by Gemini.")
 
-    # bool is a subclass of int in Python, so explicitly reject it.
     if isinstance(month, bool) or not isinstance(month, int):
         raise ValueError("Invalid month returned by Gemini.")
+
+    if not 1 <= month <= 12:
+        raise ValueError("Month must be between 1 and 12.")
 
     if isinstance(year, bool) or not isinstance(year, int):
         raise ValueError("Invalid year returned by Gemini.")
 
-    # 4. Execute the Python tool using the authenticated user's ID.
+    if not 2000 <= year <= 2100:
+        raise ValueError("Year must be between 2000 and 2100.")
+
+   
     tool_result = get_category_spending(
         db=db,
         user_id=user_id,
-        category=category,
+        category=category.strip(),
         month=month,
         year=year,
     )
 
-    # 5. Send Gemini's original function call and the tool result.
+    if not response.candidates:
+        raise RuntimeError(
+            "Gemini did not return a valid response candidate."
+        )
+
+    candidate_content = response.candidates[0].content
+
+    if candidate_content is None:
+        raise RuntimeError(
+            "Gemini returned an empty function-call response."
+        )
+
     function_response = types.Content(
-        role="user",
-        parts=[
-            types.Part.from_function_response(
-                name=function_call.name,
-                response=tool_result,
-            )
-        ],
-    )
+    role="user",
+    parts=[
+        types.Part.from_function_response(
+            name=function_call.name,
+            response=tool_result,
+        )
+    ],
+)
 
     final_response = client.models.generate_content(
-        model="gemini-flash-latest",
+        model=MODEL_NAME,
         contents=[
             question,
-            response.candidates[0].content,
+            candidate_content,
             function_response,
         ],
         config=types.GenerateContentConfig(
@@ -164,7 +181,12 @@ def answer_category_spending_question(
         ),
     )
 
-    # 6. Return both the calculated result and the explanation.
+
+    if not final_response.text:
+        raise RuntimeError(
+            "Gemini did not generate a final answer."
+        )
+
     return {
         "question": question,
         "tool_name": function_call.name,
