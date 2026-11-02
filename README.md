@@ -61,7 +61,7 @@ Instead of calculating financial figures directly through the language model, th
 Example question:
 
 ```
-**How much did I spend on food in October 2026?**
+How much did I spend on food in October 2026?
 ```
 
 The assistant identifies the required category, month, and year, calls the Python finance tool, retrieves the calculated result, and generates a natural-language response.
@@ -69,7 +69,7 @@ The assistant identifies the required category, month, and year, calls the Pytho
 Example response
 
 ```
-**You spent ₹250.00 on food in October 2026.**
+You spent ₹250.00 on food in October 2026.
 ```
 
 **Current AI tool:**
@@ -117,28 +117,34 @@ The language model does not directly access the database. Instead, it identifies
 **Example Workflow**
 
 **User question:** 
-
-How much did I spend on food in October 2026?
-
+```
+How much did I spend on Travel in October 2026?
+```
 Step 1 — User submits a question
 
 The Streamlit frontend sends the question to:
 
+```
 POST /ai/ask
+```
 
 Step 2 — Gemini identifies the required tool
 
 Gemini selects:
 
+```
 get_category_spending
+```
 
 And generates arguments:
 
+```
 {
     "category": "Food",
     "month": 10,
     "year": 2026
 }
+```
 
 Step 3 — Backend validates the arguments
 
@@ -148,6 +154,7 @@ The authenticated user's ID is supplied by FastAPI authentication rather than be
 
 Step 4 — Python executes the finance tool
 
+```
 tool_result = get_category_spending(
     db=db,
     user_id=user_id,
@@ -155,6 +162,7 @@ tool_result = get_category_spending(
     month=month,
     year=year,
 )
+```
 
 The tool queries PostgreSQL and calculates the total expenses for the requested category and period.
 
@@ -164,6 +172,7 @@ The backend provides the function result to Gemini so it can generate a natural-
 
 Step 6 — Final response
 
+```
 Example tool result:
 
 {
@@ -173,10 +182,13 @@ Example tool result:
     "total_spending": "250.00",
     "currency": "INR"
 }
+```
 
 Final AI response:
 
+```
 You spent ₹250.00 on food in October 2026.
+```
 
 ## 🗄️ Database Design
 
@@ -387,20 +399,23 @@ The test suite includes:
 **Run Tests**
 Navigate to the backend directory:
 
-cd backend
+**cd backend**
+
 Activate the virtual environment:
-.\.venv\Scripts\Activate.ps1
+
+**.\.venv\Scripts\Activate.ps1**
 
 Run all tests:
-pytest -v
+
+**pytest -v**
 
 Run an individual test file:
 
-pytest tests/test_finance_tools.py -v
+**pytest tests/test_finance_tools.py -v**
 
 Run database connection tests:
 
-pytest tests/test_db_connection.py -v
+**pytest tests/test_db_connection.py -v**
 
 
 ## 🔐 Security Considerations
