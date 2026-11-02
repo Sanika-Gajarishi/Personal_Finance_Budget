@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -8,12 +10,10 @@ from app.models.user import User
 from app.services.gemini_service import answer_category_spending_question
 
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
-
-# --------------------------------------------------
-# 1. Request schema
-# --------------------------------------------------
 
 class AskFinanceRequest(BaseModel):
     question: str = Field(
@@ -22,10 +22,6 @@ class AskFinanceRequest(BaseModel):
         description="A question about the user's personal finances.",
     )
 
-
-# --------------------------------------------------
-# 2. Ask the AI finance assistant
-# --------------------------------------------------
 
 @router.post("/ask")
 def ask_finance_assistant(
@@ -51,13 +47,18 @@ def ask_finance_assistant(
         return result
 
     except (ValueError, RuntimeError) as exc:
+        logger.warning("AI finance request rejected: %s", exc)
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         ) from exc
 
     except Exception:
-        # Do not expose internal errors or API credentials to the client.
+        logger.exception(
+            "Unexpected error while processing AI finance request."
+        )
+
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="The AI assistant could not process your request.",
