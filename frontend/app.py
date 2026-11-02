@@ -797,10 +797,6 @@ def render_add_transaction_form():
         "Record your income or expenses. "
         "Saved transactions are stored in your database."
     )
-
-    # Keep this selector OUTSIDE the form. Streamlit reruns the app
-    # when this value changes, allowing the category list to update
-    # immediately between Income and Expense.
     transaction_type = st.selectbox(
         "Transaction type",
         options=["expense", "income"],
@@ -919,8 +915,6 @@ def render_add_transaction_form():
             )
 
             st.toast("Transaction saved!")
-
-            # Rerun reloads data from the backend.
             st.rerun()
 
         else:
@@ -1589,12 +1583,10 @@ def main():
         {},
     )
 
-    # Load data from the backend.
     with st.spinner("Loading your financial data..."):
         transactions = load_transactions()
         budgets = load_budgets()
 
-    # Stop rendering financial pages if the transaction API fails.
     if transactions is None:
         st.error(
             "Unable to load transactions. Check the backend and "
@@ -1609,7 +1601,7 @@ def main():
     if budgets is None:
         budgets = []
 
-    # Sidebar.
+    
     with st.sidebar:
         st.markdown("## 💰 Personal Finance Budget")
 
@@ -1643,7 +1635,7 @@ def main():
         ):
             logout()
 
-    # Render the selected page.
+
     if page == "Dashboard":
         render_dashboard(
             transactions,
