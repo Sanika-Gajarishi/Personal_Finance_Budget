@@ -38,12 +38,10 @@ def get_category_spending(
     if not category or not category.strip():
         raise ValueError("Category cannot be empty.")
 
-    # Calculate the date range for the selected month.
     start_date = date(year, month, 1)
     last_day = monthrange(year, month)[1]
     end_date = date(year, month, last_day)
 
-    # Query only the authenticated user's expense transactions.
     statement = (
         select(func.coalesce(func.sum(Transaction.amount), 0))
         .where(
@@ -57,7 +55,6 @@ def get_category_spending(
 
     total = db.execute(statement).scalar_one()
 
-    # Convert Decimal to string to preserve monetary precision.
     total_spending = Decimal(str(total)).quantize(
         Decimal("0.01")
     )
