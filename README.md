@@ -447,6 +447,7 @@ GitHub: Sanika-Gajarishi
 
 Project Repository: Personal Finance Budget
 
+
  ## 📄 License
 
 No license file is currently present in this repository. Unless a license is added, do not assume the code is open for reuse, redistribution, or modification by others.
